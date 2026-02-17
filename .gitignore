@@ -1,0 +1,18 @@
+# Security (NEVER UPLOAD THESE)
+.env
+**/*.env
+
+# Build Artifacts (Heavy files)
+/target/
+**/*.rs.bk
+
+# Database & Logs (Local data)
+*.db
+*.db-shm
+*.db-wal
+*.csv
+market_debug.csv
+trades.csv
+
+# OS files
+.DS_Store

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoinDCX Scalper Bot - Documentation</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --text-color: #c9d1d9;
+            --header-color: #58a6ff;
+            --code-bg: #161b22;
+            --border-color: #30363d;
+            --accent-green: #2ea043;
+            --accent-red: #da3633;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-top: 1.5em;
+        }
+
+        h1 { border-bottom: 1px solid var(--border-color); padding-bottom: 10px; }
+        
+        a { color: #58a6ff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        code {
+            background-color: rgba(110, 118, 129, 0.4);
+            padding: 0.2em 0.4em;
+            border-radius: 6px;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #e6edf3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        th { background-color: var(--code-bg); color: var(--header-color); }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+        .badge-green { background: rgba(46, 160, 67, 0.15); color: #3fb950; border: 1px solid rgba(46, 160, 67, 0.4); }
+        .badge-red { background: rgba(218, 54, 51, 0.15); color: #f85149; border: 1px solid rgba(218, 54, 51, 0.4); }
+
+        .toc {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 40px;
+        }
+        .toc ul { list-style: none; padding-left: 0; }
+        .toc li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🤖 CoinDCX Scalper Bot (Rust + Raspberry Pi)</h1>
+    <p>
+        High-performance, asynchronous trading bot built in <strong>Rust</strong>. 
+        Designed for low-power devices like the Raspberry Pi with zero-latency logging, 
+        real-time web dashboards, and emergency safety mechanisms.
+    </p>
+
+    <div class="toc">
+        <h3>📋 Table of Contents</h3>
+        <ul>
+            <li><a href="#user-guide">1. User Guide & Operations</a></li>
+            <li><a href="#dashboard">2. The Dashboard</a></li>
+            <li><a href="#architecture">3. Technical Architecture</a></li>
+            <li><a href="#configuration">4. Configuration & Tuning</a></li>
+            <li><a href="#safety">5. Safety Features</a></li>
+            <li><a href="#troubleshooting">6. Troubleshooting</a></li>
+        </ul>
+    </div>
+
+    <section id="user-guide">
+        <h2>1. User Guide & Operations</h2>
+        <p>If installed as a systemd service (recommended), the bot runs automatically in the background.</p>
+        
+        <h3>Control Commands</h3>
+        <table>
+            <tr>
+                <th>Action</th>
+                <th>Command</th>
+            </tr>
+            <tr>
+                <td><strong>Check Status</strong></td>
+                <td><code>sudo systemctl status scalper</code></td>
+            </tr>
+            <tr>
+                <td><strong>Start Bot</strong></td>
+                <td><code>sudo systemctl start scalper</code></td>
+            </tr>
+            <tr>
+                <td><strong>Stop Bot</strong></td>
+                <td><code>sudo systemctl stop scalper</code> <span class="badge badge-red">Triggers Emergency Exit</span></td>
+            </tr>
+            <tr>
+                <td><strong>View Live Logs</strong></td>
+                <td><code>sudo journalctl -u scalper -f</code></td>
+            </tr>
+        </table>
+
+        <h3>Downloading Trade History</h3>
+        <p>Trades are saved to a CSV file in the project directory.</p>
+        <pre><code>cat /home/pi/coindcx_scalper/trades.csv</code></pre>
+    </section>
+
+    <section id="dashboard">
+        <h2>2. The Dashboard</h2>
+        <p>Access the real-time UI from any device on your network (or via Tailscale VPN).</p>
+        
+        <p><strong>URL:</strong> <code>http://&lt;RASPBERRY-PI-IP&gt;:3000</code></p>
+
+        <h3>Interface Elements</h3>
+        <ul>
+            <li><strong>Status Badge:</strong>
+                <ul>
+                    <li><span class="badge badge-green">IN POSITION</span> Bot has bought and is holding.</li>
+                    <li><span class="badge badge-red">IDLE</span> Bot is scanning for entry signals.</li>
+                </ul>
+            </li>
+            <li><strong>Unrealized P&L:</strong> Shows live profit/loss percentage based on current market price vs. entry price.</li>
+            <li><strong>Realized Profit:</strong> Accumulates total USDT profit for the session.</li>
+            <li><strong>Live Logs:</strong> A terminal-like box showing the last 20 internal decisions.</li>
+        </ul>
+    </section>
+
+    <section id="architecture">
+        <h2>3. Technical Architecture</h2>
+        <p>The bot is built on the <strong>Rust 2021</strong> edition, prioritizing safety and speed.</p>
+        
+        <h3>Core Stack</h3>
+        <ul>
+            <li><strong>Tokio:</strong> Asynchronous runtime for non-blocking I/O.</li>
+            <li><strong>Axum:</strong> High-performance web framework for the dashboard.</li>
+            <li><strong>Reqwest:</strong> HTTP Client for CoinDCX API calls.</li>
+            <li><strong>Parking_lot:</strong> Fast <code>RwLock</code> for thread-safe state management.</li>
+        </ul>
+
+        <h3>Data Flow</h3>
+        <ol>
+            <li><strong>Market Loop:</strong> Fetches candles every 5 seconds.</li>
+            <li><strong>Analysis:</strong> Calculates Bollinger Bands (20,2) and RSI (14).</li>
+            <li><strong>Decision Engine:</strong> 
+                <ul>
+                    <li><em>Buy:</em> RSI < 30 & Price < Low BB.</li>
+                    <li><em>Sell:</em> RSI > 70 OR Trailing Stop Hit.</li>
+                </ul>
+            </li>
+            <li><strong>Async Logger:</strong> Spawns a detached thread to write CSVs without blocking the trading loop.</li>
+        </ol>
+    </section>
+
+    <section id="configuration">
+        <h2>4. Configuration & Tuning</h2>
+        <p>Edit <code>src/main.rs</code> to change these constants. <strong>Note:</strong> You must run <code>cargo build --release</code> after changes.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Constant</th>
+                    <th>Default</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>SIMULATION_MODE</code></td>
+                    <td><code>true</code></td>
+                    <td>Set to <code>false</code> to trade real money.</td>
+                </tr>
+                <tr>
+                    <td><code>PAIR</code></td>
+                    <td><code>B-BTC_USDT</code></td>
+                    <td>Target trading pair.</td>
+                </tr>
+                <tr>
+                    <td><code>TIMEFRAME</code></td>
+                    <td><code>5m</code></td>
+                    <td>Candle interval (1m, 5m, 15m).</td>
+                </tr>
+                <tr>
+                    <td><code>TRAILING_STOP_PCT</code></td>
+                    <td><code>0.005</code></td>
+                    <td>0.5% Trailing Stop Loss.</td>
+                </tr>
+                <tr>
+                    <td><code>RSI_BUY</code></td>
+                    <td><code>30.0</code></td>
+                    <td>Buy threshold (Oversold).</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="safety">
+        <h2>5. Safety Features</h2>
+        
+        <h3>🚨 Emergency Exit (Ctrl+C)</h3>
+        <p>
+            If the bot receives a shutdown signal (SIGINT), it intercepts the termination:
+            1. Checks for open positions.
+            2. <strong>Immediately fires a Market Sell</strong> if holding assets.
+            3. Logs "EMERGENCY EXIT".
+            4. Shuts down cleanly.
+        </p>
+
+        <h3>Robust Networking</h3>
+        <ul>
+            <li><strong>DNS Recovery:</strong> If internet fails, bot retries in 5s instead of crashing.</li>
+            <li><strong>Port Binding:</strong> If Port 3000 is busy on restart, bot loops until it is free.</li>
+        </ul>
+    </section>
+
+    <section id="troubleshooting">
+        <h2>6. Troubleshooting</h2>
+        
+        <h3>"Address already in use (os error 98)"</h3>
+        <p>The previous instance hasn't released the port. The new code handles this automatically by waiting 5 seconds and retrying.</p>
+
+        <h3>Dashboard price not updating</h3>
+        <p>
+            This is browser caching. The bot includes an anti-cache timestamp, but you may need to perform a Hard Refresh:
+            <br>
+            <code>Ctrl + Shift + R</code> (Windows/Linux) or <code>Cmd + Shift + R</code> (Mac).
+        </p>
+    </section>
+
+    <footer style="margin-top: 50px; border-top: 1px solid var(--border-color); padding-top: 20px; font-size: 0.8em; color: #666;">
+        Generated for CoinDCX Scalper Project via Gemini
+    </footer>
+</div>
+
+</body>
+</html>
